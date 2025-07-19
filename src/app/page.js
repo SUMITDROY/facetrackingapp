@@ -150,7 +150,7 @@ export default function FaceTrackingApp() {
   }
 
 
-  
+
 
   function startDetectionLoop() {
     const video = videoRef.current;
@@ -204,7 +204,7 @@ export default function FaceTrackingApp() {
   function drawTrackingBox(ctx, x, y, width, height, confidence) {
     const time = Date.now() * 0.003;
     const pulse = (Math.sin(time * 3) + 1) * 0.5;
-    
+
     // Tailwind green-400 inspired colors with enhanced glow
     const primaryGreen = `rgba(34, 197, 94, ${0.9 + pulse * 0.1})`;     // green-500
     const accentCyan = `rgba(6, 182, 212, ${0.8 + pulse * 0.2})`;       // cyan-500
@@ -226,15 +226,15 @@ export default function FaceTrackingApp() {
     // Top-left corner
     ctx.fillRect(x, y, cornerSize, cornerThickness);
     ctx.fillRect(x, y, cornerThickness, cornerSize);
-    
+
     // Top-right corner
     ctx.fillRect(x + width - cornerSize, y, cornerSize, cornerThickness);
     ctx.fillRect(x + width - cornerThickness, y, cornerThickness, cornerSize);
-    
+
     // Bottom-left corner
     ctx.fillRect(x, y + height - cornerThickness, cornerSize, cornerThickness);
     ctx.fillRect(x, y + height - cornerSize, cornerThickness, cornerSize);
-    
+
     // Bottom-right corner
     ctx.fillRect(x + width - cornerSize, y + height - cornerThickness, cornerSize, cornerThickness);
     ctx.fillRect(x + width - cornerThickness, y + height - cornerSize, cornerThickness, cornerSize);
@@ -260,16 +260,16 @@ export default function FaceTrackingApp() {
     if (confidence) {
       const confidenceText = `${(confidence * 100).toFixed(1)}%`;
       ctx.font = "bold 18px system-ui";
-      
+
       // Background - Tailwind slate-800 with opacity
       ctx.fillStyle = `rgba(30, 41, 59, 0.9)`; // slate-800
       ctx.fillRect(x, y - 40, 90, 35);
-      
+
       // Border - Tailwind green-400
       ctx.strokeStyle = `rgba(74, 222, 128, 0.8)`;
       ctx.lineWidth = 2;
       ctx.strokeRect(x, y - 40, 90, 35);
-      
+
       // Text - Tailwind green-300
       ctx.fillStyle = `rgb(134, 239, 172)`; // green-300
       ctx.fillText(confidenceText, x + 8, y - 18);
@@ -287,8 +287,8 @@ export default function FaceTrackingApp() {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-   
-    
+
+
     ctx.shadowBlur = 0; // Reset shadow
   }
 
@@ -507,29 +507,31 @@ export default function FaceTrackingApp() {
 
 
   return (
-    <div style={{ backgroundColor: 'black', color: 'white' }}>
+    <div  style={{ backgroundColor: 'black', color: 'white' }}>
       <Navbar />
-    
+    <div className="pt-20 flex items-center justify-center">
       <SplitText
-  text="Face Tracking Video Recorder"
-  className="text-2xl font-semibold text-center"
-  delay={100}
-  duration={0.6}
-  ease="power3.out"
-  splitType="chars"
-  from={{ opacity: 0, y: 40 }}
-  to={{ opacity: 1, y: 0 }}
-  threshold={0.1}
-  rootMargin="-100px"
-  textAlign="center"
-  onLetterAnimationComplete={handleAnimationComplete}
-/>
-      
+        text="Face Tracking Video Recorder"
+        className="text-2xl font-semibold text-center"
+        delay={100}
+        duration={0.6}
+        ease="power3.out"
+        splitType="chars"
+        from={{ opacity: 0, y: 40 }}
+        to={{ opacity: 1, y: 0 }}
+        threshold={0.1}
+        rootMargin="-100px"
+        textAlign="center"
+      // onLetterAnimationComplete={handleAnimationComplete}
+      />
+</div>
+    <div className="pt-8 flex items-center justify-center pb-0">
       <p>Real-time face detection with video recording</p>
+      </div>
 
       <div>
-        <div>
-          <div style={{ position: 'relative', backgroundColor: 'black' }}>
+        <div className="flex items-center justify-center pt-2">
+          <div  style={{ position: 'relative', backgroundColor: 'black' }}>
             <video
               ref={videoRef}
               autoPlay
@@ -567,35 +569,43 @@ export default function FaceTrackingApp() {
               backgroundColor: 'rgba(0,0,0,0.8)'
             }}>
               {detectionStatus}
-            </div>
-          </div>
-
-          <div>
+          <div >
             {!isRecording ? (
               <button onClick={startRecording}>Start Recording</button>
             ) : (
               <button onClick={stopRecording}>Stop Recording</button>
             )}
           </div>
+            </div>
+          </div>
+
         </div>
 
         <div>
-          <h2>Recorded Videos</h2>
+          <div className="flex items-center justify-center pt-2"><h2>Recorded Videos</h2>
+          </div>
+          <div className="flex items-center justify-center pt-2">
           {recordedVideos.length > 0 && (
             <button onClick={clearAllVideos}>Clear All</button>
           )}
-
+          </div>
           {recordedVideos.length === 0 ? (
+            <div className="flex items-center justify-center pt-2">
             <p>No videos recorded yet</p>
+            </div>
           ) : (
             <div>
               {recordedVideos.map((video) => (
+                <div className="flex items-center justify-center pt-2">
                 <div key={video.id}>
-                  <h3>Video {video.id}</h3>
-                  <p>{new Date(video.timestamp).toLocaleString()}</p>
-                  <p>{(video.size / (1024 * 1024)).toFixed(1)} MB</p>
+                  <div className="pb-2">
+                  <h3 >Video {video.id}</h3>
+                  <p >{new Date(video.timestamp).toLocaleString()}</p>
+                  <p >{(video.size / (1024 * 1024)).toFixed(1)} MB</p>
+                  </div>
                   <button onClick={() => downloadVideo(video)}>Download</button>
-                  <button onClick={() => deleteVideo(video.id)}>Delete</button>
+                  <button className="pb-6" onClick={() => deleteVideo(video.id)}>Delete</button>
+                </div>
                 </div>
               ))}
             </div>
@@ -604,4 +614,9 @@ export default function FaceTrackingApp() {
       </div>
     </div>
   );
+
+
+
+
+  
 }
