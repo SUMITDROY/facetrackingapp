@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import './globals.css'
+import Navbar from "./components/ui/navbar";
+import SplitText from "./components/ui/Text";
 
 export default function FaceTrackingApp() {
   const videoRef = useRef(null);
@@ -146,6 +149,9 @@ export default function FaceTrackingApp() {
     }, 100);
   }
 
+
+  
+
   function startDetectionLoop() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -194,103 +200,139 @@ export default function FaceTrackingApp() {
     });
   }
 
+  // ENHANCED: Canvas detection elements with Tailwind-inspired colors and effects
   function drawTrackingBox(ctx, x, y, width, height, confidence) {
     const time = Date.now() * 0.003;
     const pulse = (Math.sin(time * 3) + 1) * 0.5;
-    const alpha = 0.8 + pulse * 0.2;
+    
+    // Tailwind green-400 inspired colors with enhanced glow
+    const primaryGreen = `rgba(34, 197, 94, ${0.9 + pulse * 0.1})`;     // green-500
+    const accentCyan = `rgba(6, 182, 212, ${0.8 + pulse * 0.2})`;       // cyan-500
+    const glowGreen = `rgba(74, 222, 128, ${0.6 + pulse * 0.4})`;       // green-400
 
-    ctx.strokeStyle = `rgba(0, 255, 0, ${alpha})`;
-    ctx.lineWidth = 3;
+    // Main tracking rectangle - Tailwind green-500 with glow effect
+    ctx.shadowColor = glowGreen;
+    ctx.shadowBlur = 15 + pulse * 8;
+    ctx.strokeStyle = primaryGreen;
+    ctx.lineWidth = 4;
     ctx.strokeRect(x, y, width, height);
+    ctx.shadowBlur = 0;
 
-    const cornerSize = 25;
-    const cornerThickness = 4;
-    ctx.fillStyle = `rgba(0, 255, 0, ${alpha})`;
+    // Enhanced corner markers - Tailwind emerald theme
+    const cornerSize = 30;
+    const cornerThickness = 5;
+    ctx.fillStyle = `rgba(16, 185, 129, ${0.9 + pulse * 0.1})`; // emerald-500
 
+    // Top-left corner
     ctx.fillRect(x, y, cornerSize, cornerThickness);
     ctx.fillRect(x, y, cornerThickness, cornerSize);
+    
+    // Top-right corner
     ctx.fillRect(x + width - cornerSize, y, cornerSize, cornerThickness);
     ctx.fillRect(x + width - cornerThickness, y, cornerThickness, cornerSize);
+    
+    // Bottom-left corner
     ctx.fillRect(x, y + height - cornerThickness, cornerSize, cornerThickness);
     ctx.fillRect(x, y + height - cornerSize, cornerThickness, cornerSize);
+    
+    // Bottom-right corner
     ctx.fillRect(x + width - cornerSize, y + height - cornerThickness, cornerSize, cornerThickness);
     ctx.fillRect(x + width - cornerThickness, y + height - cornerSize, cornerThickness, cornerSize);
 
+    // Center crosshair - Tailwind lime-400 inspired
     const centerX = x + width / 2;
     const centerY = y + height / 2;
-    const crossSize = 20;
+    const crossSize = 25;
 
-    ctx.strokeStyle = `rgba(0, 255, 100, ${alpha})`;
-    ctx.lineWidth = 2;
+    ctx.shadowColor = `rgba(163, 230, 53, 0.8)`; // lime-400
+    ctx.shadowBlur = 12;
+    ctx.strokeStyle = `rgba(132, 204, 22, ${0.9 + pulse * 0.1})`; // lime-500
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(centerX - crossSize, centerY);
     ctx.lineTo(centerX + crossSize, centerY);
     ctx.moveTo(centerX, centerY - crossSize);
     ctx.lineTo(centerX, centerY + crossSize);
     ctx.stroke();
+    ctx.shadowBlur = 0;
 
+    // Confidence display - Tailwind slate theme
     if (confidence) {
       const confidenceText = `${(confidence * 100).toFixed(1)}%`;
-      ctx.font = "bold 16px Arial";
-      ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-      ctx.fillRect(x, y - 35, 80, 30);
-      ctx.fillStyle = "rgb(0, 255, 0)";
-      ctx.fillText(confidenceText, x + 5, y - 12);
+      ctx.font = "bold 18px system-ui";
+      
+      // Background - Tailwind slate-800 with opacity
+      ctx.fillStyle = `rgba(30, 41, 59, 0.9)`; // slate-800
+      ctx.fillRect(x, y - 40, 90, 35);
+      
+      // Border - Tailwind green-400
+      ctx.strokeStyle = `rgba(74, 222, 128, 0.8)`;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y - 40, 90, 35);
+      
+      // Text - Tailwind green-300
+      ctx.fillStyle = `rgb(134, 239, 172)`; // green-300
+      ctx.fillText(confidenceText, x + 8, y - 18);
     }
 
+    // Scanning line animation - Tailwind cyan-400
     const scanY = y + (Math.sin(time * 4) + 1) * 0.5 * height;
-    ctx.strokeStyle = `rgba(0, 255, 255, ${0.6 * alpha})`;
-    ctx.lineWidth = 2;
+    ctx.shadowColor = `rgba(34, 211, 238, 0.6)`; // cyan-400
+    ctx.shadowBlur = 8;
+    ctx.strokeStyle = `rgba(6, 182, 212, ${0.7 + pulse * 0.3})`; // cyan-500
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(x, scanY);
     ctx.lineTo(x + width, scanY);
     ctx.stroke();
+    ctx.shadowBlur = 0;
 
-    const orbitRadius = Math.max(width, height) * 0.7;
-    const numDots = 6;
-    ctx.fillStyle = `rgba(0, 255, 255, ${alpha * 0.8})`;
-
-    for (let i = 0; i < numDots; i++) {
-      const angle = (time * 2) + (i * (Math.PI * 2) / numDots);
-      const dotX = centerX + Math.cos(angle) * orbitRadius;
-      const dotY = centerY + Math.sin(angle) * orbitRadius;
-      const dotSize = 4 + pulse * 2;
-
-      ctx.beginPath();
-      ctx.arc(dotX, dotY, dotSize, 0, Math.PI * 2);
-      ctx.fill();
-    }
+   
+    
+    ctx.shadowBlur = 0; // Reset shadow
   }
 
+  // ENHANCED: Searching indicator with Tailwind colors
   function drawSearchingIndicator(ctx) {
     const time = Date.now() * 0.003;
     const pulse = (Math.sin(time * 4) + 1) * 0.5;
 
-    ctx.font = "bold 18px Arial";
+    ctx.font = "bold 20px system-ui";
     const text = "🔍 SEARCHING FOR FACE...";
     const textWidth = ctx.measureText(text).width;
 
-    ctx.fillStyle = `rgba(0, 0, 0, ${0.8 + pulse * 0.2})`;
-    ctx.fillRect((ctx.canvas.width - textWidth) / 2 - 15, 30, textWidth + 30, 40);
+    // Background - Tailwind gray-900 with opacity
+    ctx.fillStyle = `rgba(17, 24, 39, ${0.85 + pulse * 0.15})`; // gray-900
+    ctx.fillRect((ctx.canvas.width - textWidth) / 2 - 20, 25, textWidth + 40, 50);
 
-    ctx.strokeStyle = `rgba(255, 255, 0, ${0.8 + pulse * 0.2})`;
-    ctx.lineWidth = 2;
-    ctx.strokeRect((ctx.canvas.width - textWidth) / 2 - 15, 30, textWidth + 30, 40);
+    // Border - Tailwind yellow-400 with glow
+    ctx.shadowColor = `rgba(250, 204, 21, 0.6)`; // yellow-400
+    ctx.shadowBlur = 10;
+    ctx.strokeStyle = `rgba(245, 158, 11, ${0.8 + pulse * 0.2})`; // amber-500
+    ctx.lineWidth = 3;
+    ctx.strokeRect((ctx.canvas.width - textWidth) / 2 - 20, 25, textWidth + 40, 50);
+    ctx.shadowBlur = 0;
 
-    ctx.fillStyle = `rgb(255, ${200 + pulse * 55}, 0)`;
+    // Text - Tailwind amber-300
+    ctx.fillStyle = `rgb(252, 211, 77, ${0.9 + pulse * 0.1})`; // amber-300
     ctx.fillText(text, (ctx.canvas.width - textWidth) / 2, 55);
 
+    // Radar effect - Tailwind orange-400
     const centerX = ctx.canvas.width / 2;
     const centerY = ctx.canvas.height / 2;
-    const radarRadius = 100 + pulse * 20;
+    const radarRadius = 120 + pulse * 25;
 
-    ctx.strokeStyle = `rgba(255, 255, 0, ${0.3 + pulse * 0.2})`;
-    ctx.lineWidth = 2;
+    ctx.shadowColor = `rgba(251, 146, 60, 0.4)`; // orange-400
+    ctx.shadowBlur = 15;
+    ctx.strokeStyle = `rgba(249, 115, 22, ${0.4 + pulse * 0.3})`; // orange-500
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(centerX, centerY, radarRadius, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.shadowBlur = 0;
   }
 
+  // All other functions remain unchanged...
   async function startRecording() {
     if (!videoRef.current?.srcObject) {
       alert('Camera not available');
@@ -453,9 +495,36 @@ export default function FaceTrackingApp() {
     );
   }
 
+
+
+
+
+
+
+
+
+
+
+
   return (
     <div style={{ backgroundColor: 'black', color: 'white' }}>
-      <h1>Face Tracking Video Recorder</h1>
+      <Navbar />
+    
+      <SplitText
+  text="Face Tracking Video Recorder"
+  className="text-2xl font-semibold text-center"
+  delay={100}
+  duration={0.6}
+  ease="power3.out"
+  splitType="chars"
+  from={{ opacity: 0, y: 40 }}
+  to={{ opacity: 1, y: 0 }}
+  threshold={0.1}
+  rootMargin="-100px"
+  textAlign="center"
+  onLetterAnimationComplete={handleAnimationComplete}
+/>
+      
       <p>Real-time face detection with video recording</p>
 
       <div>
