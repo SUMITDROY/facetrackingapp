@@ -507,105 +507,109 @@ export default function FaceTrackingApp() {
 
 
   return (
-    <div  style={{ backgroundColor: 'black', color: 'white' }}>
+    <div className="bg-black text-white min-h-screen">
       <Navbar />
-    <div className="pt-20 flex items-center justify-center">
-      <SplitText
-        text="Face Tracking Video Recorder"
-        className="text-2xl font-semibold text-center"
-        delay={100}
-        duration={0.6}
-        ease="power3.out"
-        splitType="chars"
-        from={{ opacity: 0, y: 40 }}
-        to={{ opacity: 1, y: 0 }}
-        threshold={0.1}
-        rootMargin="-100px"
-        textAlign="center"
-      // onLetterAnimationComplete={handleAnimationComplete}
-      />
-</div>
-    <div className="pt-8 flex items-center justify-center pb-0">
-      <p>Real-time face detection with video recording</p>
+      
+      <div className="pt-20 flex items-center justify-center">
+        <SplitText
+          text="Face Tracking Video Recorder"
+          className="text-2xl font-semibold text-center"
+          delay={100}
+          duration={0.6}
+          ease="power3.out"
+          splitType="chars"
+          from={{ opacity: 0, y: 40 }}
+          to={{ opacity: 1, y: 0 }}
+          threshold={0.1}
+          rootMargin="-100px"
+        />
       </div>
-
-      <div>
-        <div className="flex items-center justify-center pt-2">
-          <div  style={{ position: 'relative', backgroundColor: 'black' }}>
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              style={{ width: '640px', height: '480px', transform: 'scaleX(-1)' }}
-            />
-            <canvas
-              ref={canvasRef}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '640px',
-                height: '480px',
-                transform: 'scaleX(-1)'
-              }}
-            />
-
-            {isRecording && (
-              <div style={{
-                position: 'absolute',
-                top: '10px',
-                right: '10px',
-                color: 'red'
-              }}>
-                REC
-              </div>
-            )}
-
-            <div style={{
-              position: 'absolute',
-              bottom: '10px',
-              left: '10px',
-              backgroundColor: 'rgba(0,0,0,0.8)'
-            }}>
-              {detectionStatus}
-          <div >
-            {!isRecording ? (
-              <button onClick={startRecording}>Start Recording</button>
-            ) : (
-              <button onClick={stopRecording}>Stop Recording</button>
-            )}
-          </div>
+  
+      <div className="pt-8 flex items-center justify-center">
+        <p className="text-sm text-gray-400">Real-time face detection with video recording</p>
+      </div>
+  
+      <div className="max-w-xl w-full mx-auto pt-4 relative">
+        <div className="relative">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-auto object-cover rounded-lg transform scale-x-[-1]"
+          />
+          <canvas
+            ref={canvasRef}
+            className="absolute top-0 left-0 w-full h-full transform scale-x-[-1]"
+          />
+  
+          {isRecording && (
+            <div className="absolute top-3 right-3 text-red-500 font-bold text-sm animate-pulse">
+              REC
             </div>
-          </div>
-
-        </div>
-
-        <div>
-          <div className="flex items-center justify-center pt-2"><h2>Recorded Videos</h2>
-          </div>
-          <div className="flex items-center justify-center pt-2">
-          {recordedVideos.length > 0 && (
-            <button onClick={clearAllVideos}>Clear All</button>
           )}
-          </div>
-          {recordedVideos.length === 0 ? (
-            <div className="flex items-center justify-center pt-2">
-            <p>No videos recorded yet</p>
+  
+          <div className="absolute bottom-3 left-3 bg-black/70 px-4 py-2 rounded-lg text-sm">
+            {detectionStatus}
+            <div className="mt-2 flex space-x-2">
+              {!isRecording ? (
+                <button
+                  onClick={startRecording}
+                  className="px-4 py-2 rounded-full border border-white bg-transparent text-white text-xs hover:bg-white/10 transition"
+                >
+                  Start Recording
+                </button>
+              ) : (
+                <button
+                  onClick={stopRecording}
+                  className="px-4 py-2 rounded-full border border-white bg-transparent text-white text-xs hover:bg-white/10 transition"
+                >
+                  Stop Recording
+                </button>
+              )}
             </div>
+          </div>
+        </div>
+  
+        <div className="pt-6 text-center">
+          <h2 className="text-lg font-semibold">Recorded Videos</h2>
+          {recordedVideos.length > 0 && (
+            <button
+              onClick={clearAllVideos}
+              className="mt-2 px-4 py-2 rounded-full border border-white bg-transparent text-white text-xs hover:bg-white/10 transition"
+            >
+              Clear All
+            </button>
+          )}
+  
+          {recordedVideos.length === 0 ? (
+            <p className="mt-4 text-gray-500 text-sm">No videos recorded yet</p>
           ) : (
-            <div>
+            <div className="mt-4 space-y-4">
               {recordedVideos.map((video) => (
-                <div className="flex items-center justify-center pt-2">
-                <div key={video.id}>
-                  <div className="pb-2">
-                  <h3 >Video {video.id}</h3>
-                  <p >{new Date(video.timestamp).toLocaleString()}</p>
-                  <p >{(video.size / (1024 * 1024)).toFixed(1)} MB</p>
+                <div key={video.id} className="bg-white/5 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium">Video {video.id}</h3>
+                  <p className="text-xs text-gray-400">
+                    {new Date(video.timestamp).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {(video.size / (1024 * 1024)).toFixed(1)} MB
+                  </p>
+  
+                  <div className="mt-2 flex space-x-2">
+                    <button
+                      onClick={() => downloadVideo(video)}
+                      className="px-3 py-1 rounded-full border border-white bg-transparent text-xs hover:bg-white/10 transition"
+                    >
+                      Download
+                    </button>
+                    <button
+                      onClick={() => deleteVideo(video.id)}
+                      className="px-3 py-1 rounded-full border border-white bg-transparent text-xs hover:bg-white/10 transition"
+                    >
+                      Delete
+                    </button>
                   </div>
-                  <button onClick={() => downloadVideo(video)}>Download</button>
-                  <button className="pb-6" onClick={() => deleteVideo(video.id)}>Delete</button>
-                </div>
                 </div>
               ))}
             </div>
@@ -614,9 +618,10 @@ export default function FaceTrackingApp() {
       </div>
     </div>
   );
-
-
-
-
   
+
+
+
+
+
 }
