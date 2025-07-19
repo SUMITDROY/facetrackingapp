@@ -7,16 +7,8 @@ export default function Navbar() {
   }
   return (
     
-    <nav className="fixed top-0 left-0 w-full bg-black/30 backdrop-blur-md py-3 z-50">
+    <nav className="fixed top-0 left-0 w-full backdrop-blur-md py-3 z-50">
       <div className="flex items-center justify-center gap-10">
-        {/* <div className=" flex items-center gap-3">
-          <img
-            src=""
-            alt="Avatar"
-            className="w-10 h-10 rounded-full"
-          />
-          <span className="text-white font-bold text-lg">SDR</span>
-        </div> */}
 
         <div className="flex items-center gap-8 text-white text-md font-medium">
         <button

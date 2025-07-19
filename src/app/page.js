@@ -3,6 +3,42 @@ import { useEffect, useRef, useState } from "react";
 import './globals.css'
 import Navbar from "./components/ui/navbar";
 import SplitText from "./components/ui/Text";
+import GradientText from "./components/ui/GradientText";
+import Instruction from "./components/ui/instruction";
+import { motion } from "framer-motion";
+import React from "react";
+
+function NotificationToast({ notification, onClose }) {
+  if (!notification) return null;
+
+  const bgColor = notification.type === 'success' ? 'bg-green-500/20 border-green-400' : 
+                  notification.type === 'error' ? 'bg-red-500/20 border-red-400' : 
+                  'bg-blue-500/20 border-blue-400';
+  
+  const iconColor = notification.type === 'success' ? 'text-green-400' : 
+                    notification.type === 'error' ? 'text-red-400' : 
+                    'text-blue-400';
+
+  return (
+    <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top duration-300">
+      <div className={`${bgColor} border backdrop-blur-md rounded-lg p-4 max-w-sm shadow-2xl`}>
+        <div className="flex items-center space-x-3">
+          <div className={`${iconColor} text-lg`}>
+            {notification.type === 'success' ? '✅' : 
+             notification.type === 'error' ? '❌' : 'ℹ️'}
+          </div>
+          <p className="text-white text-sm font-medium flex-1">{notification.message}</p>
+          <button 
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors text-lg"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function FaceTrackingApp() {
   const videoRef = useRef(null);
@@ -11,12 +47,18 @@ export default function FaceTrackingApp() {
   const [recordedVideos, setRecordedVideos] = useState([]);
   const [detectionStatus, setDetectionStatus] = useState("Initializing...");
   const [cameraError, setCameraError] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   const mediaRecorder = useRef(null);
   const recordedChunks = useRef([]);
   const animationFrameId = useRef(null);
   const faceDetector = useRef(null);
   const lastDetections = useRef([]);
+
+  function showNotification(message, type = 'success') {
+    setNotification({ message, type, id: Date.now() });
+    setTimeout(() => setNotification(null), 4000);
+  }
 
   useEffect(() => {
     initializeApp();
@@ -149,9 +191,6 @@ export default function FaceTrackingApp() {
     }, 100);
   }
 
-
-
-
   function startDetectionLoop() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -200,17 +239,14 @@ export default function FaceTrackingApp() {
     });
   }
 
-  // ENHANCED: Canvas detection elements with Tailwind-inspired colors and effects
   function drawTrackingBox(ctx, x, y, width, height, confidence) {
     const time = Date.now() * 0.003;
     const pulse = (Math.sin(time * 3) + 1) * 0.5;
 
-    // Tailwind green-400 inspired colors with enhanced glow
-    const primaryGreen = `rgba(34, 197, 94, ${0.9 + pulse * 0.1})`;     // green-500
-    const accentCyan = `rgba(6, 182, 212, ${0.8 + pulse * 0.2})`;       // cyan-500
-    const glowGreen = `rgba(74, 222, 128, ${0.6 + pulse * 0.4})`;       // green-400
+    const primaryGreen = `rgba(34, 197, 94, ${0.9 + pulse * 0.1})`;
+    const accentCyan = `rgba(6, 182, 212, ${0.8 + pulse * 0.2})`;
+    const glowGreen = `rgba(74, 222, 128, ${0.6 + pulse * 0.4})`;
 
-    // Main tracking rectangle - Tailwind green-500 with glow effect
     ctx.shadowColor = glowGreen;
     ctx.shadowBlur = 15 + pulse * 8;
     ctx.strokeStyle = primaryGreen;
@@ -218,35 +254,26 @@ export default function FaceTrackingApp() {
     ctx.strokeRect(x, y, width, height);
     ctx.shadowBlur = 0;
 
-    // Enhanced corner markers - Tailwind emerald theme
     const cornerSize = 30;
     const cornerThickness = 5;
-    ctx.fillStyle = `rgba(16, 185, 129, ${0.9 + pulse * 0.1})`; // emerald-500
+    ctx.fillStyle = `rgba(16, 185, 129, ${0.9 + pulse * 0.1})`;
 
-    // Top-left corner
     ctx.fillRect(x, y, cornerSize, cornerThickness);
     ctx.fillRect(x, y, cornerThickness, cornerSize);
-
-    // Top-right corner
     ctx.fillRect(x + width - cornerSize, y, cornerSize, cornerThickness);
     ctx.fillRect(x + width - cornerThickness, y, cornerThickness, cornerSize);
-
-    // Bottom-left corner
     ctx.fillRect(x, y + height - cornerThickness, cornerSize, cornerThickness);
     ctx.fillRect(x, y + height - cornerSize, cornerThickness, cornerSize);
-
-    // Bottom-right corner
     ctx.fillRect(x + width - cornerSize, y + height - cornerThickness, cornerSize, cornerThickness);
     ctx.fillRect(x + width - cornerThickness, y + height - cornerSize, cornerThickness, cornerSize);
 
-    // Center crosshair - Tailwind lime-400 inspired
     const centerX = x + width / 2;
     const centerY = y + height / 2;
     const crossSize = 25;
 
-    ctx.shadowColor = `rgba(163, 230, 53, 0.8)`; // lime-400
+    ctx.shadowColor = `rgba(163, 230, 53, 0.8)`;
     ctx.shadowBlur = 12;
-    ctx.strokeStyle = `rgba(132, 204, 22, ${0.9 + pulse * 0.1})`; // lime-500
+    ctx.strokeStyle = `rgba(132, 204, 22, ${0.9 + pulse * 0.1})`;
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(centerX - crossSize, centerY);
@@ -256,43 +283,33 @@ export default function FaceTrackingApp() {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // Confidence display - Tailwind slate theme
     if (confidence) {
       const confidenceText = `${(confidence * 100).toFixed(1)}%`;
       ctx.font = "bold 18px system-ui";
 
-      // Background - Tailwind slate-800 with opacity
-      ctx.fillStyle = `rgba(30, 41, 59, 0.9)`; // slate-800
+      ctx.fillStyle = `rgba(30, 41, 59, 0.9)`;
       ctx.fillRect(x, y - 40, 90, 35);
 
-      // Border - Tailwind green-400
       ctx.strokeStyle = `rgba(74, 222, 128, 0.8)`;
       ctx.lineWidth = 2;
       ctx.strokeRect(x, y - 40, 90, 35);
 
-      // Text - Tailwind green-300
-      ctx.fillStyle = `rgb(134, 239, 172)`; // green-300
+      ctx.fillStyle = `rgb(134, 239, 172)`;
       ctx.fillText(confidenceText, x + 8, y - 18);
     }
 
-    // Scanning line animation - Tailwind cyan-400
     const scanY = y + (Math.sin(time * 4) + 1) * 0.5 * height;
-    ctx.shadowColor = `rgba(34, 211, 238, 0.6)`; // cyan-400
+    ctx.shadowColor = `rgba(34, 211, 238, 0.6)`;
     ctx.shadowBlur = 8;
-    ctx.strokeStyle = `rgba(6, 182, 212, ${0.7 + pulse * 0.3})`; // cyan-500
+    ctx.strokeStyle = `rgba(6, 182, 212, ${0.7 + pulse * 0.3})`;
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(x, scanY);
     ctx.lineTo(x + width, scanY);
     ctx.stroke();
     ctx.shadowBlur = 0;
-
-
-
-    ctx.shadowBlur = 0; // Reset shadow
   }
 
-  // ENHANCED: Searching indicator with Tailwind colors
   function drawSearchingIndicator(ctx) {
     const time = Date.now() * 0.003;
     const pulse = (Math.sin(time * 4) + 1) * 0.5;
@@ -301,30 +318,26 @@ export default function FaceTrackingApp() {
     const text = "🔍 SEARCHING FOR FACE...";
     const textWidth = ctx.measureText(text).width;
 
-    // Background - Tailwind gray-900 with opacity
-    ctx.fillStyle = `rgba(17, 24, 39, ${0.85 + pulse * 0.15})`; // gray-900
+    ctx.fillStyle = `rgba(17, 24, 39, ${0.85 + pulse * 0.15})`;
     ctx.fillRect((ctx.canvas.width - textWidth) / 2 - 20, 25, textWidth + 40, 50);
 
-    // Border - Tailwind yellow-400 with glow
-    ctx.shadowColor = `rgba(250, 204, 21, 0.6)`; // yellow-400
+    ctx.shadowColor = `rgba(250, 204, 21, 0.6)`;
     ctx.shadowBlur = 10;
-    ctx.strokeStyle = `rgba(245, 158, 11, ${0.8 + pulse * 0.2})`; // amber-500
+    ctx.strokeStyle = `rgba(245, 158, 11, ${0.8 + pulse * 0.2})`;
     ctx.lineWidth = 3;
     ctx.strokeRect((ctx.canvas.width - textWidth) / 2 - 20, 25, textWidth + 40, 50);
     ctx.shadowBlur = 0;
 
-    // Text - Tailwind amber-300
-    ctx.fillStyle = `rgb(252, 211, 77, ${0.9 + pulse * 0.1})`; // amber-300
+    ctx.fillStyle = `rgb(252, 211, 77, ${0.9 + pulse * 0.1})`;
     ctx.fillText(text, (ctx.canvas.width - textWidth) / 2, 55);
 
-    // Radar effect - Tailwind orange-400
     const centerX = ctx.canvas.width / 2;
     const centerY = ctx.canvas.height / 2;
     const radarRadius = 120 + pulse * 25;
 
-    ctx.shadowColor = `rgba(251, 146, 60, 0.4)`; // orange-400
+    ctx.shadowColor = `rgba(251, 146, 60, 0.4)`;
     ctx.shadowBlur = 15;
-    ctx.strokeStyle = `rgba(249, 115, 22, ${0.4 + pulse * 0.3})`; // orange-500
+    ctx.strokeStyle = `rgba(249, 115, 22, ${0.4 + pulse * 0.3})`;
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(centerX, centerY, radarRadius, 0, Math.PI * 2);
@@ -332,10 +345,9 @@ export default function FaceTrackingApp() {
     ctx.shadowBlur = 0;
   }
 
-  // All other functions remain unchanged...
   async function startRecording() {
     if (!videoRef.current?.srcObject) {
-      alert('Camera not available');
+      showNotification('Camera not available', 'error');
       return;
     }
 
@@ -387,7 +399,7 @@ export default function FaceTrackingApp() {
 
     } catch (error) {
       console.error('Recording start failed:', error);
-      alert('Failed to start recording: ' + error.message);
+      showNotification(`Failed to start recording: ${error.message}`, 'error');
     }
   }
 
@@ -428,7 +440,7 @@ export default function FaceTrackingApp() {
       console.warn('Failed to save video to localStorage:', error);
     }
 
-    alert('✅ Video recorded and saved successfully!');
+    showNotification('Video recorded and saved successfully!', 'success');
   }
 
   function loadStoredVideos() {
@@ -465,7 +477,7 @@ export default function FaceTrackingApp() {
       updatedVideos.map(v => ({ id: v.id, timestamp: v.timestamp, size: v.size }))
     ));
 
-    alert('Video deleted successfully');
+    showNotification('Video deleted successfully', 'success');
   }
 
   function clearAllVideos() {
@@ -474,7 +486,7 @@ export default function FaceTrackingApp() {
     });
     localStorage.removeItem('faceTrackingVideos');
     setRecordedVideos([]);
-    alert('All videos cleared');
+    showNotification('All videos cleared', 'success');
   }
 
   function stopCamera() {
@@ -484,139 +496,297 @@ export default function FaceTrackingApp() {
     }
   }
 
+  // Modern Camera Error Screen
   if (cameraError) {
     return (
-      <div style={{ backgroundColor: 'black', color: 'white' }}>
-        <h1>Camera Error</h1>
-        <p>{cameraError}</p>
-        <p>Please ensure camera and microphone permissions are granted and refresh the page.</p>
-        <button onClick={() => window.location.reload()}>Refresh Page</button>
+      <div className="min-h-screen w-full bg-[#020617] relative">
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `
+              radial-gradient(circle at 50% 100%, rgba(70, 85, 110, 0.5) 0%, transparent 60%),
+              radial-gradient(circle at 50% 100%, rgba(99, 102, 241, 0.4) 0%, transparent 70%),
+              radial-gradient(circle at 50% 100%, rgba(181, 184, 208, 0.3) 0%, transparent 80%)
+            `,
+          }}
+        />
+
+        <div className="relative z-10 text-white min-h-screen">
+          <Navbar />
+          
+          <div className="flex items-center justify-center min-h-[80vh] px-4 sm:px-6 lg:px-8">
+            <div className="max-w-sm sm:max-w-md w-full text-center">
+              {/* Error Icon */}
+              <div className="mb-6 sm:mb-8">
+                <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 bg-red-500/20 border border-red-400/30 rounded-full flex items-center justify-center">
+                  <svg className="w-10 h-10 sm:w-12 sm:h-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                      d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2zM8 12h4m-2-2v4" 
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Error Title */}
+              <GradientText
+                colors={["#ef4444", "#f87171", "#ef4444"]}
+                animationSpeed={2}
+                showBorder={false}
+                className="text-2xl sm:text-3xl font-bold mb-4"
+              >
+                Camera Access Error
+              </GradientText>
+
+              {/* Error Message */}
+              <div className="bg-white/5 border border-red-400/30 backdrop-blur-sm rounded-lg p-4 sm:p-6 mb-6">
+                <p className="text-red-300 text-sm mb-3 font-medium">
+                  {cameraError}
+                </p>
+                <div className="text-gray-400 text-xs space-y-2">
+                  <p>• Ensure camera and microphone permissions are granted</p>
+                  <p>• Check if another application is using your camera</p>
+                  <p>• Try refreshing the page or restarting your browser</p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="w-full px-4 sm:px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg font-medium transition-all duration-200 transform hover:scale-[1.02] text-sm sm:text-base"
+                >
+                  🔄 Refresh Page
+                </button>
+                
+                <button
+                  onClick={() => {
+                    navigator.permissions.query({name: 'camera'}).then(result => {
+                      if (result.state === 'prompt') {
+                        window.location.reload();
+                      }
+                    });
+                  }}
+                  className="w-full px-4 sm:px-6 py-3 border border-white/20 hover:bg-white/5 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base"
+                >
+                  🎥 Request Camera Access
+                </button>
+              </div>
+
+              {/* Help Text */}
+              <p className="text-gray-500 text-xs mt-6">
+                Having trouble? Make sure you're using HTTPS and your browser supports camera access.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-
-
-
-
-
-
-
-
-
-
-
   return (
-    <div  style={{ backgroundColor: 'black', color: 'white' }}>
-      <Navbar />
-    <div className="pt-20 flex items-center justify-center">
-      <SplitText
-        text="Face Tracking Video Recorder"
-        className="text-2xl font-semibold text-center"
-        delay={100}
-        duration={0.6}
-        ease="power3.out"
-        splitType="chars"
-        from={{ opacity: 0, y: 40 }}
-        to={{ opacity: 1, y: 0 }}
-        threshold={0.1}
-        rootMargin="-100px"
-        textAlign="center"
-      // onLetterAnimationComplete={handleAnimationComplete}
+    <div className="min-h-screen w-full bg-[#020617] relative">
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 50% 100%, rgba(10, 10, 10, 0.7) 0%, transparent 50%),
+            radial-gradient(circle at 50% 80%, rgba(20, 20, 20, 0.6) 0%, transparent 55%),
+            radial-gradient(circle at 50% 60%, rgba(30, 30, 30, 0.5) 0%, transparent 60%),
+            radial-gradient(circle at 50% 40%, rgba(50, 50, 50, 0.4) 0%, transparent 65%),
+            radial-gradient(circle at 50% 20%, rgba(80, 80, 80, 0.3) 0%, transparent 70%)
+          `,
+        }}
       />
-</div>
-    <div className="pt-8 flex items-center justify-center pb-0">
-      <p>Real-time face detection with video recording</p>
-      </div>
 
-      <div>
-        <div className="flex items-center justify-center pt-2">
-          <div  style={{ position: 'relative', backgroundColor: 'black' }}>
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              style={{ width: '640px', height: '480px', transform: 'scaleX(-1)' }}
-            />
-            <canvas
-              ref={canvasRef}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '640px',
-                height: '480px',
-                transform: 'scaleX(-1)'
-              }}
-            />
+      {/* Modern Notification Toast */}
+      <NotificationToast 
+        notification={notification} 
+        onClose={() => setNotification(null)} 
+      />
 
-            {isRecording && (
-              <div style={{
-                position: 'absolute',
-                top: '10px',
-                right: '10px',
-                color: 'red'
-              }}>
-                REC
-              </div>
-            )}
+      <div className="relative z-10 text-white min-h-screen">
+        <Navbar />
 
-            <div style={{
-              position: 'absolute',
-              bottom: '10px',
-              left: '10px',
-              backgroundColor: 'rgba(0,0,0,0.8)'
-            }}>
-              {detectionStatus}
-          <div >
-            {!isRecording ? (
-              <button onClick={startRecording}>Start Recording</button>
-            ) : (
-              <button onClick={stopRecording}>Stop Recording</button>
-            )}
-          </div>
+        {/* Hero Section */}
+        <div className="pt-16 sm:pt-20 px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <GradientText
+              colors={["#dc2626", "#ef4444", "#f87171", "#fca5a5", "#dc2626"]}
+              animationSpeed={3}
+              showBorder={false}
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
+            >
+              Face Tracker & Recorder
+            </GradientText>
+            <div className="mt-3 sm:mt-4">
+              <p className="text-sm sm:text-base md:text-lg text-gray-300 font-medium tracking-wide">
+                Advanced Real-Time Face Detection & Video Recording
+              </p>
             </div>
           </div>
-
         </div>
 
-        <div>
-          <div className="flex items-center justify-center pt-2"><h2>Recorded Videos</h2>
-          </div>
-          <div className="flex items-center justify-center pt-2">
-          {recordedVideos.length > 0 && (
-            <button onClick={clearAllVideos}>Clear All</button>
-          )}
-          </div>
-          {recordedVideos.length === 0 ? (
-            <div className="flex items-center justify-center pt-2">
-            <p>No videos recorded yet</p>
-            </div>
-          ) : (
-            <div>
-              {recordedVideos.map((video) => (
-                <div className="flex items-center justify-center pt-2">
-                <div key={video.id}>
-                  <div className="pb-2">
-                  <h3 >Video {video.id}</h3>
-                  <p >{new Date(video.timestamp).toLocaleString()}</p>
-                  <p >{(video.size / (1024 * 1024)).toFixed(1)} MB</p>
+        {/* Main Content */}
+        <div className="mt-8 sm:mt-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-xl mx-auto">
+            {/* Video Container */}
+            <div className="relative bg-black/20 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-auto object-cover transform scale-x-[-1]"
+              />
+              <canvas
+                ref={canvasRef}
+                className="absolute top-0 left-0 w-full h-full transform scale-x-[-1]"
+              />
+
+              {/* Recording Indicator */}
+              {isRecording && (
+                <div className="absolute top-3 right-3 bg-red-500/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center space-x-2 animate-pulse">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  <span className="text-white text-xs font-bold">REC</span>
+                </div>
+              )}
+
+              {/* Controls Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4">
+                <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
+                  {/* Status */}
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-white text-sm font-medium">{detectionStatus}</span>
                   </div>
-                  <button onClick={() => downloadVideo(video)}>Download</button>
-                  <button className="pb-6" onClick={() => deleteVideo(video.id)}>Delete</button>
+
+                  {/* Recording Button */}
+                  <div className="flex space-x-2">
+                    {!isRecording ? (
+                      <button
+                        onClick={startRecording}
+                        className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-full text-white text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-lg"
+                      >
+                        ⏺ Start Recording
+                      </button>
+                    ) : (
+                      <button
+                        onClick={stopRecording}
+                        className="px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 rounded-full text-white text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-lg"
+                      >
+                        ⏹ Stop Recording
+                      </button>
+                    )}
+                  </div>
                 </div>
-                </div>
-              ))}
+              </div>
             </div>
-          )}
+
+            {/* Videos Section */}
+            <div className="mt-8 sm:mt-12">
+              <div className="text-center mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-red-400 to-rose-300 bg-clip-text text-transparent mb-2">
+                  Recorded Sessions
+                </h2>
+                <p className="text-gray-400 text-sm">
+                  Your face tracking recordings are stored locally
+                </p>
+                
+                {recordedVideos.length > 0 && (
+                  <button
+                    onClick={clearAllVideos}
+                    className="mt-4 px-4 py-2 border border-red-400/30 hover:border-red-400/50 bg-red-500/10 hover:bg-red-500/20 rounded-full text-red-300 hover:text-red-200 text-sm font-medium transition-all duration-200"
+                  >
+                    🗑 Clear All Videos
+                  </button>
+                )}
+              </div>
+
+              {recordedVideos.length === 0 ? (
+                <div className="text-center py-12 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-600/20 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-400 text-sm font-medium">
+                    No recordings yet. Start your first session!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {recordedVideos.map((video) => (
+                    <div
+                      key={video.id}
+                      className="relative bg-white/5 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white/10 shadow-lg overflow-hidden group transition-all duration-300 hover:border-red-400/30 hover:bg-white/10"
+                    >
+                      {/* Hover Gradient Effect */}
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl bg-gradient-to-br from-red-500/5 via-transparent to-rose-500/5"></div>
+
+                      <div className="relative z-10">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                          <div>
+                            <h3 className="text-base sm:text-lg font-semibold text-white mb-1 bg-gradient-to-r from-red-300 to-rose-200 bg-clip-text text-transparent">
+                              Recording #{video.id.toString().slice(-4)}
+                            </h3>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs text-gray-400 space-y-1 sm:space-y-0">
+                              <span className="flex items-center space-x-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>{new Date(video.timestamp).toLocaleDateString()}</span>
+                              </span>
+                              <span className="flex items-center space-x-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h4a1 1 0 011 1v2m3 0V2a1 1 0 011-1h2a1 1 0 011 1v2m0 0a2 2 0 012 2v1a1 1 0 01-1 1H4a1 1 0 01-1-1V6a2 2 0 012-2m10 0V9a1 1 0 01-1 1H6a1 1 0 01-1-1V4h10z" />
+                                </svg>
+                                <span>{new Date(video.timestamp).toLocaleTimeString()}</span>
+                              </span>
+                              <span className="flex items-center space-x-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>{(video.size / (1024 * 1024)).toFixed(1)} MB</span>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                          <button
+                            onClick={() => downloadVideo(video)}
+                            className="flex-1 sm:flex-none px-4 py-2 bg-gradient-to-r from-blue-500/20 to-blue-600/20 hover:from-blue-500/30 hover:to-blue-600/30 border border-blue-400/30 hover:border-blue-400/50 rounded-lg text-blue-300 hover:text-blue-200 text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span>Download</span>
+                          </button>
+                          <button
+                            onClick={() => deleteVideo(video.id)}
+                            className="flex-1 sm:flex-none px-4 py-2 bg-gradient-to-r from-red-500/20 to-red-600/20 hover:from-red-500/30 hover:to-red-600/30 border border-red-400/30 hover:border-red-400/50 rounded-lg text-red-300 hover:text-red-200 text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Instructions */}
+            <div className="mt-8 sm:mt-12 pb-8">   
+              <Instruction/>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-
-
-
-
-  
 }
