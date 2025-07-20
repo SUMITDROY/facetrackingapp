@@ -305,14 +305,14 @@ export default function FaceTrackingApp() {
         <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <div className="pt-16 text-center">
           <div className={`
- text-sm sm:text-base md:text-lg 
- font-normal sm:font-medium md:font-semibold 
- bg-clip-text text-transparent 
- ${darkMode 
-   ? "bg-gradient-to-r from-blue-200 via-blue-300 to-blue-200" 
-   : "bg-gradient-to-r from-blue-700 via-blue-800 to-blue-700"
+            text-sm sm:text-base md:text-lg 
+            font-normal sm:font-medium md:font-semibold 
+            bg-clip-text text-transparent 
+            ${darkMode 
+              ? "bg-gradient-to-r from-blue-200 via-blue-300 to-blue-200" 
+              : "bg-gradient-to-r from-blue-700 via-blue-800 to-blue-700"
             }
-`}>
+          `}>
             Introducing you to the advanced
           </div>
           <GradientText

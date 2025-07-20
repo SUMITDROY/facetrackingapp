@@ -20,11 +20,11 @@ export default function InstructionsCard({ darkMode }) {
           <h3 className={`font-semibold mb-3 text-base md:text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>Recording</h3>
           <ul className={`ml-4 space-y-1 text-xs list-disc marker:text-pink-400 leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             <li>
-              <span>Click <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>"Start Recording"</span> to begin</span>
+              <span>Click <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>&quot;Start Recording&quot;</span> to begin</span>
             </li>
             <li>Face tracking markers will appear automatically</li>
             <li>
-              Click <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>"Stop Recording"</span> when finished
+              Click <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>&quot;Stop Recording&quot;</span> when finished
             </li>
             <li>Download or save videos locally</li>
           </ul>
