@@ -11,17 +11,17 @@ function NotificationToast({ notification, onClose }) {
     notification.type === "success"
       ? "bg-green-500/20 border-green-400 dark:bg-green-600/20 dark:border-green-500"
       : notification.type === "error"
-      ? "bg-red-500/20 border-red-400 dark:bg-red-600/20 dark:border-red-500"
-      : "bg-blue-500/20 border-blue-400 dark:bg-blue-600/20 dark:border-blue-500";
+        ? "bg-red-500/20 border-red-400 dark:bg-red-600/20 dark:border-red-500"
+        : "bg-blue-500/20 border-blue-400 dark:bg-blue-600/20 dark:border-blue-500";
   const iconColor =
     notification.type === "success"
       ? "text-green-400 dark:text-green-300"
       : notification.type === "error"
-      ? "text-red-400 dark:text-red-300"
-      : "text-blue-400 dark:text-blue-300";
+        ? "text-red-400 dark:text-red-300"
+        : "text-blue-400 dark:text-blue-300";
   return (
     <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top duration-300">
-      <div className={`${bgColor} border backdrop-blur-md rounded-lg p-4 max-w-sm shadow-2xl`}> 
+      <div className={`${bgColor} border backdrop-blur-md rounded-lg p-4 max-w-sm shadow-2xl`}>
         <div className="flex items-center space-x-3">
           <div className={`${iconColor} text-lg`}>
             {notification.type === "success" ? "✅" : notification.type === "error" ? "❌" : "ℹ️"}
@@ -299,12 +299,20 @@ export default function FaceTrackingApp() {
   }
 
   return (
-    <div className={`${darkMode ? "dark bg-[#020617]" : "bg-white"} min-h-screen w-full relative px-4 sm:px-6 lg:px-8`}> 
+    <div className={`${darkMode ? "dark bg-[#020617]" : "bg-white"} min-h-screen w-full relative px-4 sm:px-6 lg:px-8`}>
       <NotificationToast notification={notification} onClose={() => setNotification(null)} />
       <div className={`relative z-10 min-h-screen ${darkMode ? "text-white" : "text-gray-900"}`}>
         <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <div className="pt-16 text-center">
-          <div className={`text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-to-r from-white/20 via-blue-500 to-white/20 bg-clip-text text-transparent ${darkMode ? "text-blue-300" : "text-blue-600"}`}>
+          <div className={`
+ text-sm sm:text-base md:text-lg 
+ font-normal sm:font-medium md:font-semibold 
+ bg-clip-text text-transparent 
+ ${darkMode 
+   ? "bg-gradient-to-r from-blue-200 via-blue-300 to-blue-200" 
+   : "bg-gradient-to-r from-blue-700 via-blue-800 to-blue-700"
+            }
+`}>
             Introducing you to the advanced
           </div>
           <GradientText
@@ -320,7 +328,7 @@ export default function FaceTrackingApp() {
           </div>
         </div>
         <div className="mt-8 max-w-xl mx-auto">
-          <div className={`${darkMode ? "bg-black/20 border-white/10 shadow-2xl" : "bg-gray-50 border-gray-300 shadow-md"} relative rounded-2xl overflow-hidden border`}> 
+          <div className={`${darkMode ? "bg-black/20 border-white/10 shadow-2xl" : "bg-gray-50 border-gray-300 shadow-md"} relative rounded-2xl overflow-hidden border`}>
             <video ref={videoRef} autoPlay playsInline muted className={`w-full h-auto object-cover transform scale-x-[-1] ${darkMode ? "" : "brightness-[0.9]"}`} />
             <canvas ref={previewCanvasRef} className="absolute top-0 left-0 w-full h-full transform scale-x-[-1]" />
             {isRecording && (
@@ -329,7 +337,7 @@ export default function FaceTrackingApp() {
                 <span className="text-white text-xs font-bold">REC</span>
               </div>
             )}
-            <div className={`${darkMode ? "bg-gradient-to-t from-black/80 via-black/50 to-transparent" : "bg-gradient-to-t from-white/80 via-white/50 to-transparent"} absolute bottom-0 left-0 right-0 p-4`}> 
+            <div className={`${darkMode ? "bg-gradient-to-t from-black/80 via-black/50 to-transparent" : "bg-gradient-to-t from-white/80 via-white/50 to-transparent"} absolute bottom-0 left-0 right-0 p-4`}>
               <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
                 <span className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
@@ -371,7 +379,7 @@ export default function FaceTrackingApp() {
               )}
             </div>
             {recordedVideos.length === 0 ? (
-              <div className={`${darkMode ? "bg-white/5 border-white/10 text-gray-400" : "bg-gray-100 border border-gray-300 text-gray-600"} text-center py-12 rounded-xl`}> 
+              <div className={`${darkMode ? "bg-white/5 border-white/10 text-gray-400" : "bg-gray-100 border border-gray-300 text-gray-600"} text-center py-12 rounded-xl`}>
                 <div className="w-16 h-16 mx-auto mb-4 bg-gray-600/20 rounded-full flex items-center justify-center">
                   <svg className="w-8 h-8" fill="none" stroke={darkMode ? "currentColor" : "#4b5563"} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
