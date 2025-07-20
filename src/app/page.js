@@ -48,7 +48,7 @@ export default function FaceTrackingApp() {
   const overlayDetections = useRef([]);
   const faceDetector = useRef(null);
 
-  // Dark mode state
+
   const [darkMode, setDarkMode] = useState(true);
 
   function toggleDarkMode() {
@@ -77,7 +77,7 @@ export default function FaceTrackingApp() {
       recordingLoopId.current && cancelAnimationFrame(recordingLoopId.current);
       stopCamera();
     };
-    // eslint-disable-next-line
+  
   }, []);
 
   async function setupCamera() {
@@ -191,7 +191,7 @@ export default function FaceTrackingApp() {
     });
   }
 
-  // RECORDING WITH CONTINUOUS LOOP
+
   async function startRecording() {
     if (!videoRef.current) return;
     showNotification("Recording started (Video only + Overlay)", "success");
@@ -368,7 +368,7 @@ export default function FaceTrackingApp() {
               <h2 className={`text-xl sm:text-2xl font-bold bg-gradient-to-r ${darkMode ? "from-red-400 to-rose-300" : "from-red-600 to-rose-500"} bg-clip-text text-transparent`}>
                 Recorded Sessions
               </h2>
-              <p className={`${darkMode ? "text-gray-400" : "text-gray-700"} text-sm`}>Your face tracking videos are stored locally (.webm with overlay)</p>
+              <p className={`${darkMode ? "text-gray-400" : "text-gray-700"} text-sm`}>Your face tracking videos are stored locally </p>
               {recordedVideos.length > 0 && (
                 <button
                   onClick={clearAllVideos}
