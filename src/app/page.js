@@ -9,25 +9,25 @@ function NotificationToast({ notification, onClose }) {
   if (!notification) return null;
   const bgColor =
     notification.type === "success"
-      ? "bg-green-500/20 border-green-400"
+      ? "bg-green-500/20 border-green-400 dark:bg-green-600/20 dark:border-green-500"
       : notification.type === "error"
-      ? "bg-red-500/20 border-red-400"
-      : "bg-blue-500/20 border-blue-400";
+      ? "bg-red-500/20 border-red-400 dark:bg-red-600/20 dark:border-red-500"
+      : "bg-blue-500/20 border-blue-400 dark:bg-blue-600/20 dark:border-blue-500";
   const iconColor =
     notification.type === "success"
-      ? "text-green-400"
+      ? "text-green-400 dark:text-green-300"
       : notification.type === "error"
-      ? "text-red-400"
-      : "text-blue-400";
+      ? "text-red-400 dark:text-red-300"
+      : "text-blue-400 dark:text-blue-300";
   return (
     <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top duration-300">
-      <div className={`${bgColor} border backdrop-blur-md rounded-lg p-4 max-w-sm shadow-2xl`}>
+      <div className={`${bgColor} border backdrop-blur-md rounded-lg p-4 max-w-sm shadow-2xl`}> 
         <div className="flex items-center space-x-3">
           <div className={`${iconColor} text-lg`}>
             {notification.type === "success" ? "✅" : notification.type === "error" ? "❌" : "ℹ️"}
           </div>
-          <p className="text-white text-sm font-medium flex-1">{notification.message}</p>
-          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors text-lg">×</button>
+          <p className="text-sm font-medium flex-1 text-white dark:text-gray-100">{notification.message}</p>
+          <button onClick={onClose} className="text-gray-400 hover:text-white dark:hover:text-gray-300 transition-colors text-lg">×</button>
         </div>
       </div>
     </div>
@@ -47,6 +47,13 @@ export default function FaceTrackingApp() {
   const recordingLoopId = useRef(null);
   const overlayDetections = useRef([]);
   const faceDetector = useRef(null);
+
+  // Dark mode state
+  const [darkMode, setDarkMode] = useState(true);
+
+  function toggleDarkMode() {
+    setDarkMode((prev) => !prev);
+  }
 
   function showNotification(message, type = "success") {
     setNotification({ message, type, id: Date.now() });
@@ -136,12 +143,16 @@ export default function FaceTrackingApp() {
   function drawOverlay(ctx, dets) {
     if (!dets || dets.length === 0) {
       const text = "🔍 SEARCHING FOR FACE...";
+      ctx.save();
+      ctx.scale(-1, 1);
+      ctx.translate(-ctx.canvas.width, 0);
       ctx.font = "bold 20px system-ui";
       const w = ctx.measureText(text).width;
       ctx.fillStyle = "rgba(17,24,39,0.88)";
       ctx.fillRect((ctx.canvas.width - w) / 2 - 20, 25, w + 40, 50);
       ctx.fillStyle = "#facc15";
       ctx.fillText(text, (ctx.canvas.width - w) / 2, 55);
+      ctx.restore();
       return;
     }
     dets.forEach((det) => {
@@ -288,32 +299,29 @@ export default function FaceTrackingApp() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#020617] relative px-4 sm:px-6 lg:px-8">
+    <div className={`${darkMode ? "dark bg-[#020617]" : "bg-white"} min-h-screen w-full relative px-4 sm:px-6 lg:px-8`}> 
       <NotificationToast notification={notification} onClose={() => setNotification(null)} />
-      <div className="relative z-10 text-white min-h-screen">
-        <Navbar />
+      <div className={`relative z-10 min-h-screen ${darkMode ? "text-white" : "text-gray-900"}`}>
+        <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <div className="pt-16 text-center">
-        <div className="text-lg sm:text-xl md:text-2xl font-semibold text-blue-200 bg-gradient-to-r from-white/20 via-blue-200 to-white/20 bg-clip-text text-transparent">
-        Introducing you to the advanced 
-        </div>
-          
+          <div className={`text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-to-r from-white/20 via-blue-500 to-white/20 bg-clip-text text-transparent ${darkMode ? "text-blue-300" : "text-blue-600"}`}>
+            Introducing you to the advanced
+          </div>
           <GradientText
-            colors={[" #3b82f6, #8b5cf6, #ec4899, #f97316, #facc15"]}
+            colors={[darkMode ? "#3b82f6, #8b5cf6, #ec4899, #f97316, #facc15" : "#2563eb, #7c3aed, #db2777, #ea580c, #ca8a04"]}
             animationSpeed={10}
             showBorder={false}
             className="text-3xl sm:text-5xl leading-tight"
           >
             Face Tracker and Recorder
           </GradientText>
-          <div className="mt-3">
-            <p className="text-sm sm:text-base md:text-lg font-light text-gray-400 tracking-wide">
-              Real-Time Face Detection & Video-Only Recording 
-            </p>
+          <div className={`mt-3 font-light tracking-wide ${darkMode ? "text-gray-400" : "text-gray-700"} text-sm sm:text-base md:text-lg`}>
+            <p>Real-Time Face Detection & Video-Only Recording</p>
           </div>
         </div>
         <div className="mt-8 max-w-xl mx-auto">
-          <div className="relative bg-black/20 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-            <video ref={videoRef} autoPlay playsInline muted className="w-full h-auto object-cover transform scale-x-[-1]" />
+          <div className={`${darkMode ? "bg-black/20 border-white/10 shadow-2xl" : "bg-gray-50 border-gray-300 shadow-md"} relative rounded-2xl overflow-hidden border`}> 
+            <video ref={videoRef} autoPlay playsInline muted className={`w-full h-auto object-cover transform scale-x-[-1] ${darkMode ? "" : "brightness-[0.9]"}`} />
             <canvas ref={previewCanvasRef} className="absolute top-0 left-0 w-full h-full transform scale-x-[-1]" />
             {isRecording && (
               <div className="absolute top-3 right-3 bg-red-500/90 rounded-full px-3 py-1 flex items-center space-x-2 animate-pulse">
@@ -321,11 +329,11 @@ export default function FaceTrackingApp() {
                 <span className="text-white text-xs font-bold">REC</span>
               </div>
             )}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4">
+            <div className={`${darkMode ? "bg-gradient-to-t from-black/80 via-black/50 to-transparent" : "bg-gradient-to-t from-white/80 via-white/50 to-transparent"} absolute bottom-0 left-0 right-0 p-4`}> 
               <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
                 <span className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-white text-sm font-medium">{detectionStatus}</span>
+                  <span className={`${darkMode ? "text-white" : "text-black"} text-sm font-medium`}>{detectionStatus}</span>
                 </span>
                 <div className="flex space-x-2">
                   {!isRecording ? (
@@ -349,60 +357,59 @@ export default function FaceTrackingApp() {
           </div>
           <div className="mt-8">
             <div className="text-center mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-red-400 to-rose-300 bg-clip-text text-transparent mb-2">
+              <h2 className={`text-xl sm:text-2xl font-bold bg-gradient-to-r ${darkMode ? "from-red-400 to-rose-300" : "from-red-600 to-rose-500"} bg-clip-text text-transparent`}>
                 Recorded Sessions
               </h2>
-              <p className="text-gray-400 text-sm">
-                Your face tracking videos are stored locally (.webm with overlay)
-              </p>
+              <p className={`${darkMode ? "text-gray-400" : "text-gray-700"} text-sm`}>Your face tracking videos are stored locally (.webm with overlay)</p>
               {recordedVideos.length > 0 && (
                 <button
                   onClick={clearAllVideos}
-                  className="mt-4 px-4 py-2 border border-red-400/30 bg-red-500/10 rounded-full text-red-300 text-sm font-medium hover:bg-red-500/20 hover:text-red-200 transition"
+                  className={`${darkMode ? "border border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200" : "border border-red-400/30 bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-900"} mt-4 px-4 py-2 rounded-full text-sm font-medium transition`}
                 >
                   🗑 Clear All Videos
                 </button>
               )}
             </div>
             {recordedVideos.length === 0 ? (
-              <div className="text-center py-12 bg-white/5 rounded-xl border border-white/10">
+              <div className={`${darkMode ? "bg-white/5 border-white/10 text-gray-400" : "bg-gray-100 border border-gray-300 text-gray-600"} text-center py-12 rounded-xl`}> 
                 <div className="w-16 h-16 mx-auto mb-4 bg-gray-600/20 rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-8 h-8" fill="none" stroke={darkMode ? "currentColor" : "#4b5563"} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <p className="text-gray-400 text-sm font-medium">
-                  No recordings yet. Start your first session!
-                </p>
+                <p className="text-sm font-medium">No recordings yet. Start your first session!</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {recordedVideos.map((video) => (
-                  <div key={video.id} className="relative bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10 shadow-lg overflow-hidden flex flex-col sm:flex-row items-center sm:justify-between group hover:border-red-400/30 hover:bg-white/10">
+                  <div
+                    key={video.id}
+                    className={`${darkMode ? "bg-white/5 border-white/10 hover:border-red-400/30 hover:bg-white/10" : "bg-gray-100 border border-gray-300 hover:border-red-400/30 hover:bg-red-50"} relative rounded-xl p-4 sm:p-6 shadow-lg flex flex-col sm:flex-row items-center sm:justify-between group`}
+                  >
                     <div>
-                      <h3 className="text-base sm:text-lg font-semibold text-white bg-gradient-to-r from-red-300 to-rose-200 bg-clip-text text-transparent">
+                      <h3 className={`text-base sm:text-lg font-semibold bg-gradient-to-r from-red-300 to-rose-200 bg-clip-text text-transparent ${darkMode ? "" : "text-red-700"}`}>
                         Recording #{video.id.toString().slice(-4)}
                       </h3>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400 mt-1">
+                      <div className={`flex flex-wrap items-center gap-2 text-xs mt-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
                         <span>{new Date(video.timestamp).toLocaleString()}</span>
                         <span>·</span>
                         <span>{(video.size / (1024 * 1024)).toFixed(1)} MB</span>
                         <span>·</span>
-                        <span className="text-blue-200">WEBM</span>
+                        <span className={`${darkMode ? "text-blue-200" : "text-blue-700"}`}>WEBM</span>
                         <span>·</span>
-                        <span className="text-green-200">Video + Overlay</span>
+                        <span className={`${darkMode ? "text-green-200" : "text-green-700"}`}>Video + Overlay</span>
                       </div>
                     </div>
                     <div className="flex space-x-2 mt-3 sm:mt-0">
                       <button
                         onClick={() => downloadVideo(video)}
-                        className="px-4 py-2 bg-blue-600/20 border border-blue-400/30 rounded-lg text-blue-300 text-sm font-medium hover:bg-blue-600/30 hover:text-blue-200"
+                        className={`${darkMode ? "bg-blue-600/20 border border-blue-400/30 text-blue-300 hover:bg-blue-600/30 hover:text-blue-200" : "bg-blue-100 border border-blue-300 text-blue-700 hover:bg-blue-200 hover:text-blue-900"} px-4 py-2 rounded-lg text-sm font-medium transition`}
                       >
                         Download
                       </button>
                       <button
                         onClick={() => deleteVideo(video.id)}
-                        className="px-4 py-2 bg-red-600/20 border border-red-400/30 rounded-lg text-red-300 text-sm font-medium hover:bg-red-600/30 hover:text-red-200"
+                        className={`${darkMode ? "bg-red-600/20 border border-red-400/30 text-red-300 hover:bg-red-600/30 hover:text-red-200" : "bg-red-100 border border-red-300 text-red-700 hover:bg-red-200 hover:text-red-900"} px-4 py-2 rounded-lg text-sm font-medium transition`}
                       >
                         Delete
                       </button>
@@ -412,7 +419,7 @@ export default function FaceTrackingApp() {
               </div>
             )}
             <div className="mt-8 pb-8">
-              <Instruction />
+              <Instruction darkMode={darkMode} />
             </div>
           </div>
         </div>
